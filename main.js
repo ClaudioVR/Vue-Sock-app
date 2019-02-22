@@ -1,4 +1,4 @@
-const eventBus = new Vue()
+var eventBus = new Vue()
 
 Vue.component('product', {
   props: {
@@ -11,91 +11,104 @@ Vue.component('product', {
     <div class="product">
 
       <div class="product-image">
-        <img v-bind:src="image" >
+        <img v-bind:src="image" v-bind:alt="description">
       </div>
 
       <div class="product-info">
-        <h1>{{title}}</h1>
-        <p v-if="inStock">In stock</p>
-        <p v-else
-           :class="{outOfStock: !inStock}">Out of stock</p>
-        <p>Shipping: {{shipping}}</p>
 
-        <p>Product Details:</p>
+        <h1>{{ title }}</h1>
+        <p v-if="inStock">In stock</p>
+        <p v-else>Out of stock</p>
+        <p v-show="onSale">On sale</p>
+        <p>Shipping: {{ shipping }}</p>
+
         <ul>
-          <li v-for="detail in details">{{detail}}</li>
+          <li v-for="detail in details">{{ detail }}</li>
         </ul>
 
-        <h3>Available colours:</h3>
         <div v-for="(variant, index) in variants"
-             :key="variant.variantId"
-             class="color-box"
-             v-bind:style="{backgroundColor: variant.variantColor}"
-             v-on:mouseover="updateProduct(index)">
+            :key="variant.variantId"
+            class="color-box"
+            :style="{ backgroundColor: variant.variantColor }"
+            v-on:mouseover="updateProduct(index)">
         </div>
 
-        <p>Sizes: {{sizes.join(', ')}}</p>
+        <ul>
+          <li v-for="size in sizes">{{ size }}</li>
+        </ul>
 
         <button v-on:click="addToCart"
-                v-bind:disabled="!inStock"
-                v-bind:class="{disabledButton: !inStock}">Add to Cart</button>
-        <button v-on:click="removeProduct" style="background: red;">Empty cart</button>
+                :disabled="!inStock"
+                :class="{ disabledButton: !inStock }"
+                >Add to Cart</button>
+
+        <button v-on:click="removeFromCart">Remove item</button>
       </div>
 
       <product-tabs :reviews="reviews"></product-tabs>
 
+
     </div>
-  `,
+    `,
   data() {
     return {
       brand: 'Vue Mastery',
-      product: 'Prime Woolen Socks',
+      product: 'Socks',
+      description: 'A pair of warm, fuzzy socks',
       selectedVariant: 0,
+      link: 'https://en.wikipedia.org/wiki/Sock',
+      onSale: false,
       details: ['80% cotton', '20% polyester', 'Gender-neutral'],
-      variants: [
-        {
+      variants: [{
           variantId: 2234,
-          variantColor: 'Green',
-          variantImage: 'greenSocks.jpeg',
-          variantQuantity: 10,
+          variantColor: 'green',
+          variantImage: './greenSocks.jpeg',
+          variantQuantity: 10
         },
         {
           variantId: 2235,
-          variantColor: 'Blue',
-          variantImage: 'blueSocks.jpeg',
-          variantQuantity: 0,
+          variantColor: 'blue',
+          variantImage: './blueSocks.jpeg',
+          variantQuantity: 0
         }
       ],
-      sizes: [40, 43, 45, 47],
+      sizes: ['41-43', '43-45', '46'],
       reviews: []
     }
   },
   methods: {
-    addToCart: function() {
+    addToCart() {
       this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId)
     },
-    removeProduct: function() {
+    removeFromCart() {
       this.$emit('remove-from-cart', this.variants[this.selectedVariant].variantId)
     },
-    updateProduct: function(index) {
+    updateProduct(index) {
       this.selectedVariant = index
-    }
+    },
+    inStockUpdate() {
+      if (this.variants.variantQuantity === 0) {
+        this.inStock = false;
+      }
+    },
   },
   computed: {
     title() {
-      return this.brand + ' ' + this.product
+      return this.brand + ' ' + this.product;
+    },
+    inStock() {
+      return this.variants[this.selectedVariant].variantQuantity
+
     },
     image() {
       return this.variants[this.selectedVariant].variantImage
     },
-    inStock() {
-      return this.variants[this.selectedVariant].variantQuantity
-    },
     shipping() {
       if (this.premium) {
         return 'Free'
-      }
+      } else {
         return 2.99
+      }
     }
   },
   mounted() {
@@ -105,18 +118,18 @@ Vue.component('product', {
   }
 })
 
+
 Vue.component('product-review', {
   template: `
     <form class="review-form" @submit.prevent="onSubmit">
 
-      <p v-if="errors.length">
-        <b>Please correct the following error(s):</b>
-        <ul>
-          <li v-for="error in errors">{{error}}</li>
-        </ul>
-      </p>
-
+    <p v-if="errors.length">
+      <b>Please correct the following error(s):</b>
+      <ul>
+        <li v-for="error in errors">{{ error }}</li>
+      </ul>
       <p>
+
         <label for="name">Name:</label>
         <input id="name" v-model="name" placeholder="name">
       </p>
@@ -142,7 +155,7 @@ Vue.component('product-review', {
       </p>
 
     </form>
-    `,
+  `,
   data() {
     return {
       name: null,
@@ -154,23 +167,25 @@ Vue.component('product-review', {
   methods: {
     onSubmit() {
       if(this.name && this.review && this.rating) {
-        let productReview = {
-          name: this.name,
-          review: this.review,
-          rating: this.rating
-        }
-        eventBus.$emit('review-submitted', productReview)
-        this.name = null
-        this.review = null
-        this.rating = null
+            let productReview = {
+              name: this.name,
+              review: this.review,
+              rating: this.rating
+            }
+            eventBus.$emit('review-submitted', productReview)
+            this.name = null
+            this.review = null
+            this.rating = null
       } else {
-         if(!this.name) this.errors.push("Name required.")
-         if(!this.review) this.errors.push("Review required.")
-         if(!this.rating) this.errors.push("Rating required.")
-        }
+          if(!this.name) this.errors.push('Name required.')
+          if(!this.review) this.errors.push('Review required.')
+          if(!this.rating) this.errors.push('Rating required.')
+      }
+
     }
   }
 })
+
 
 Vue.component('product-tabs', {
   props: {
@@ -181,21 +196,19 @@ Vue.component('product-tabs', {
   },
   template: `
     <div>
-      <span class= "tab"
-            :class="{ activeTab: selectedTab === tab }"
-            v-for="(tab, index) in tabs"
-            :key="index"
+      <span class="tab"
+            :class="{activeTab: selectedTab === tab}"
+            v-for="(tab, index) in tabs" :key="index"
             @click="selectedTab = tab">
             {{ tab }}</span>
 
       <div v-show="selectedTab === 'Reviews'">
-        <h2>Reviews</h2>
         <p v-if="!reviews.length">There are no reviews yet.</p>
-        <ul>
-          <li v-for="review in reviews">
-            <p>{{review.name}}</p>
-            <p>Rating: {{review.rating}}</p>
-            <p>{{review.review}}</p>
+        <ul v-else>
+          <li v-for="(review, index) in reviews" :key="index">
+            <p>{{ review.name }}</p>
+            <p>Rating: {{ review.rating }}</p>
+            <p>{{ review.review }}</p>
           </li>
         </ul>
       </div>
@@ -207,24 +220,25 @@ Vue.component('product-tabs', {
   `,
   data() {
     return {
-      tabs: ['Reviews', 'Make a Review'],
+      tabs:['Reviews', 'Make a Review'],
       selectedTab: 'Reviews'
     }
   }
 })
 
-// App instance
-const app = new Vue({
+
+
+var app = new Vue({
   el: '#app',
   data: {
-    premium: true,
+    premium: false,
     cart: []
   },
   methods: {
     updateCart(id) {
       this.cart.push(id)
     },
-    removeProduct(id) {
+    decrementCart(id) {
       this.cart.pop(id)
     }
   }

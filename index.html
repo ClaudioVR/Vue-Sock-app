@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="style.css">
-  <title>Socks app</title>
+  <link rel="stylesheet" href="styles.css">
+  <title>Product App</title>
 </head>
+
 <body>
 
-<div class="nav-bar"></div>
+  <div class="nav-bar"></div>
 
-<div id="app">
-  <div class="cart">
-    <p>Cart({{cart.length}})</p>
+  <div id="app">
+    <div class="cart">
+      <p>Cart({{ cart.length }})</p>
+    </div>
+
+    <product :premium="premium" @add-to-cart="updateCart" @remove-from-cart="decrementCart"></product>
   </div>
 
-  <product :premium="premium" @add-to-cart="updateCart" @remove-from-cart="removeProduct"></product>
-</div>
-
- <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
- <script src="main.js"></script>
-
-
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="main.js"></script>
 </body>
+
 </html>
